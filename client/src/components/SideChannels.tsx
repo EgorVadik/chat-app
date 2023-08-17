@@ -1,26 +1,11 @@
-import { Channel } from '../types/types'
+import { useAtom } from 'jotai'
 import AddChannelBtn from './AddChannelBtn'
 import ChannelCard from './ChannelCard'
 import SearchChannel from './SearchChannel'
+import { channelsAtom } from '@/state/atoms'
 
 export default function SideChannels() {
-    const dummyChannels: Channel[] = [
-        {
-            id: '1',
-            name: 'general test',
-            description: 'This is the general channel',
-        },
-        {
-            id: '2',
-            name: 'random',
-            description: 'This is the random channel',
-        },
-        {
-            id: '3',
-            name: 'announcements',
-            description: 'This is the announcements channel',
-        },
-    ]
+    const [channels] = useAtom(channelsAtom)
 
     return (
         <>
@@ -33,9 +18,11 @@ export default function SideChannels() {
             <div className='px-6 py-3 text-light-gray'>
                 <SearchChannel />
                 <div className='mt-6 flex flex-col gap-4'>
-                    {dummyChannels.map((channel) => (
-                        <ChannelCard key={channel.id} channel={channel} />
-                    ))}
+                    {channels == null || channels.length === 0
+                        ? 'No Joined Channels'
+                        : channels.map((channel) => (
+                              <ChannelCard key={channel.id} channel={channel} />
+                          ))}
                 </div>
             </div>
         </>

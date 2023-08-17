@@ -2,7 +2,11 @@ import { useAtom } from 'jotai'
 import { IoIosMenu, IoMdClose } from 'react-icons/io'
 import { openAtom } from '../state/atoms'
 
-export default function Topbar() {
+type Props = {
+    channelName?: string
+}
+
+export default function Topbar({ channelName }: Props) {
     const [, setOpen] = useAtom(openAtom)
 
     return (
@@ -11,7 +15,9 @@ export default function Topbar() {
                 <button onClick={() => setOpen(true)}>
                     <IoIosMenu className='text-2xl lg:hidden' />
                 </button>
-                <p className='truncate w-fit'>Some random channel name</p>
+                <p className='truncate w-fit'>
+                    {channelName ?? 'No Channel Selected'}
+                </p>
             </div>
             <button
                 onClick={() => setOpen(false)}

@@ -3,6 +3,8 @@ import { Route, Routes } from 'react-router-dom'
 import RequireAuth from '@/components/RequireAuth'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
+import AuthNotRequired from './components/AuthNotRequired'
+import ChannelPage from './pages/ChannelPage'
 
 function App() {
     return (
@@ -15,8 +17,30 @@ function App() {
                     </RequireAuth>
                 }
             />
-            <Route path='/login' element={<LoginPage />} />
-            <Route path='/register' element={<RegisterPage />} />
+            <Route
+                path='/channel/:channelId'
+                element={
+                    <RequireAuth>
+                        <ChannelPage />
+                    </RequireAuth>
+                }
+            />
+            <Route
+                path='/login'
+                element={
+                    <AuthNotRequired>
+                        <LoginPage />
+                    </AuthNotRequired>
+                }
+            />
+            <Route
+                path='/register'
+                element={
+                    <AuthNotRequired>
+                        <RegisterPage />
+                    </AuthNotRequired>
+                }
+            />
         </Routes>
     )
 }

@@ -1,14 +1,14 @@
-import { Member } from '../types/types'
+import { ChannelMember } from '@/types/types'
 
 type Props = {
-    member: Member
+    member: ChannelMember
 }
 
 export default function MemberCard({ member }: Props) {
     return (
         <div className='flex items-center gap-4'>
             <img
-                src={member.avatar}
+                src={member.photo ?? 'https://i.imgur.com/8Km9tLL.png'}
                 alt={member.name}
                 className='w-10 h-10 rounded-lg'
             />

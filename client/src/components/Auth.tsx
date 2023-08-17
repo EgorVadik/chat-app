@@ -10,7 +10,7 @@ import {
 } from '@/validations/validations'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Link, redirect } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useToast } from '@/components/ui/use-toast'
 import { useState } from 'react'
 
@@ -30,28 +30,74 @@ export default function Auth({ isLogin = false }: Props) {
     })
     const { toast } = useToast()
     const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
 
     const onSubmit = async (data: AuthForm) => {
-        console.log(data)
-
         setLoading(true)
         if (isLogin) {
-            await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/api/auth/login`,
-                data
-            )
+            try {
+                const res = await axios.post(
+                    `${import.meta.env.VITE_SERVER_URL}/api/auth/login`,
+                    data,
+                    {
+                        withCredentials: true,
+                    }
+                )
 
-            setLoading(false)
-            redirect('/')
-            return
+                toast({
+                    title: res.data.message,
+                })
+
+                navigate('/')
+                window.location.reload()
+            } catch (error) {
+                if (error instanceof AxiosError) {
+                    switch (error.response?.data.message) {
+                        case 'Incorrect email.':
+                            toast({
+                                title: 'Invalid Email',
+                                description: 'Please try again',
+                            })
+                            break
+
+                        case 'Incorrect password.':
+                            toast({
+                                title: 'Invalid Password',
+                                description: 'Please try again',
+                            })
+                            break
+
+                        case 'Invalid Data Formats.':
+                            toast({
+                                title: 'Invalid Data Formats',
+                                description: 'Please try again',
+                            })
+                            break
+
+                        default:
+                            toast({
+                                title: 'Something went wrong',
+                                description: 'Please try again later',
+                            })
+                            break
+                    }
+                }
+            } finally {
+                setLoading(false)
+            }
         }
 
         try {
-            const res = await axios.post(
+            await axios.post(
                 `${import.meta.env.VITE_SERVER_URL}/api/auth/register`,
                 data
             )
-            console.log(res.data)
+
+            toast({
+                title: 'Account created',
+                description: 'Please login to continue',
+            })
+            navigate('/login')
         } catch (error) {
             if (error instanceof AxiosError) {
                 switch (error.response?.status) {
