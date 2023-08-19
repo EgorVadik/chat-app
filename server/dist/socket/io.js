@@ -9,7 +9,7 @@ const socket_io_1 = require("socket.io");
 exports.default = () => {
     const io = new socket_io_1.Server(app_1.server, {
         cors: {
-            origin: 'http://localhost:5173',
+            origin: 'https://chat-app-egorvadik.vercel.app/',
             credentials: true,
         },
     });

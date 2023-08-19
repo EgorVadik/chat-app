@@ -33,7 +33,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(
     cors({
-        origin: 'http://localhost:5173',
+        origin: 'https://chat-app-egorvadik.vercel.app/',
         credentials: true,
     })
 )
