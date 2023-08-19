@@ -5,6 +5,7 @@ import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
 import AuthNotRequired from './components/AuthNotRequired'
 import ChannelPage from './pages/ChannelPage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
     return (
@@ -22,6 +23,14 @@ function App() {
                 element={
                     <RequireAuth>
                         <ChannelPage />
+                    </RequireAuth>
+                }
+            />
+            <Route
+                path='/profile'
+                element={
+                    <RequireAuth>
+                        <ProfilePage />
                     </RequireAuth>
                 }
             />

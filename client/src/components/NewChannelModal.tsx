@@ -58,6 +58,12 @@ export default function NewChannelModal({
         } catch (error) {
             if (error instanceof AxiosError) {
                 switch (error.response?.status) {
+                    case 400:
+                        toast({
+                            title: 'Channel Name already exists',
+                            description: 'Please try again with a new name',
+                        })
+                        break
                     case 401:
                         toast({
                             title: 'Unauthorized',

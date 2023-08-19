@@ -18,7 +18,8 @@ export default function SearchChannelCard({ channel, uid }: props) {
             </div>
             <div>
                 <p className='text-sm text-medium-gray group-hover:text-primary duration-200 whitespace-nowrap'>
-                    {channel.userIds.length} members
+                    {channel.userIds.length}{' '}
+                    {channel.userIds.length === 1 ? 'member' : 'members'}
                 </p>
                 <p>
                     {channel.userIds.includes(uid) && (

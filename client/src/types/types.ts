@@ -19,6 +19,9 @@ export interface Channel {
     userIds: string[]
     messages?: Message[]
     members?: ChannelMember[]
+    _count?: {
+        messages: number
+    }
 }
 
 export type SearchChannel = Omit<Channel, 'messages' | 'members'>

@@ -1,3 +1,4 @@
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { prisma } from '../app'
 import { loginRequired } from '../configs/auth'
 import { Router } from 'express'
@@ -18,15 +19,25 @@ router.get('/', loginRequired, async (req, res) => {
 
 router.post('/', loginRequired, async (req, res) => {
     const { name, description } = req.body
-    const newChannel = await prisma.channel.create({
-        data: {
-            name,
-            description,
-            userIds: [req.user!.id],
-        },
-    })
+    try {
+        const newChannel = await prisma.channel.create({
+            data: {
+                name,
+                description,
+                userIds: [req.user!.id],
+            },
+        })
 
-    res.status(201).json(newChannel)
+        res.status(201).json(newChannel)
+    } catch (error) {
+        if (error instanceof PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+                res.status(400).send('Channel already exists')
+            }
+        }
+
+        res.status(500).end()
+    }
 })
 
 router.post('/join', loginRequired, async (req, res) => {
@@ -90,7 +101,7 @@ router.get('/search', loginRequired, async (req, res) => {
     res.send(channels).status(200)
 })
 
-router.get('/:id', loginRequired, async (req, res) => {
+router.get('/:id/', loginRequired, async (req, res) => {
     const channel = await prisma.channel.findUnique({
         where: {
             id: req.params.id,
@@ -120,5 +131,8 @@ router.get('/:id', loginRequired, async (req, res) => {
         },
     })
 
+    if (!channel) {
+        return res.status(404).send('Channel Not Found')
+    }
     res.send(channel).status(200)
 })
