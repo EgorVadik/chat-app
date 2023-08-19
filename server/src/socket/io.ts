@@ -5,7 +5,7 @@ import { Server } from 'socket.io'
 export default () => {
     const io = new Server(server, {
         cors: {
-            origin: 'https://chat-app-egorvadik.vercel.app/',
+            origin: 'https://chat-app-egorvadik.vercel.app',
             credentials: true,
         },
     })
