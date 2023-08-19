@@ -1,4 +1,4 @@
-import { Channel, User, UserData } from '@/types/types'
+import type { Channel, ChannelMember, User, UserData } from '@/types/types'
 import axios from 'axios'
 import { atom } from 'jotai'
 
@@ -46,3 +46,5 @@ export const channelsAtom = atom(async (get) => {
 })
 
 export const onChannelsAtom = atom(true)
+
+export const membersAtom = atom<ChannelMember[]>([])

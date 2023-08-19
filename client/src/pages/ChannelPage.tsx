@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAtom } from 'jotai'
 import Sidebar from '@/components/Sidebar'
-import { onChannelsAtom, openAtom, userAtom } from '@/state/atoms'
+import { membersAtom, onChannelsAtom, openAtom, userAtom } from '@/state/atoms'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useViewportSize } from '@mantine/hooks'
 import { useMediaQuery } from '@mantine/hooks'
@@ -16,6 +16,8 @@ import { useWindowEvent } from '@mantine/hooks'
 import { MessageSkeleton } from '@/components/MessageSkeleton'
 import { useInterval } from '@mantine/hooks'
 import { useForceUpdate } from '@mantine/hooks'
+import MessageSeparator from '@/components/MessageSeparator'
+import NotInChannel from '@/components/NotInChannel'
 
 export default function ChannelPage() {
     const { channelId } = useParams()
@@ -30,6 +32,7 @@ export default function ChannelPage() {
     const [user] = useAtom(userAtom)
     const forceUpdate = useForceUpdate()
     const interval = useInterval(forceUpdate, 1000 * 60)
+    const [members, setMembers] = useAtom(membersAtom)
 
     useWindowEvent('load', () => {
         ref.current?.scrollIntoView({
@@ -40,7 +43,8 @@ export default function ChannelPage() {
     useEffect(() => {
         interval.start()
         return () => interval.stop()
-    })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
         ref.current?.scrollIntoView({
@@ -64,6 +68,7 @@ export default function ChannelPage() {
 
                 setChannel(res.data)
                 setMessages(res.data.messages)
+                setMembers(res.data.members)
             } catch (error) {
                 console.log(error)
                 return
@@ -73,7 +78,11 @@ export default function ChannelPage() {
         }
 
         loadChannel()
-    }, [channelId, setOnChannels])
+    }, [channelId, setOnChannels, setMembers])
+
+    if (!loading && !channel?.userIds.includes(user?.id ?? '')) {
+        return <NotInChannel channelId={channelId!} />
+    }
 
     return (
         <main className='flex bg-primary'>
@@ -82,7 +91,8 @@ export default function ChannelPage() {
                 channels={onChannels}
                 channelName={channel?.name ?? 'Loading'}
                 channelDescription={channel?.description ?? 'Loading'}
-                members={channel?.members ?? []}
+                members={members}
+                loading={loading}
             />
             <div
                 data-open={open}
@@ -113,6 +123,10 @@ export default function ChannelPage() {
                             ) : (
                                 <div key={message.id}>
                                     <MessageCard message={message} />
+                                    <MessageSeparator
+                                        date1={message.createdAt}
+                                        date2={messages[i + 1].createdAt}
+                                    />
                                 </div>
                             )
                         )
@@ -123,6 +137,7 @@ export default function ChannelPage() {
                     channelId={channelId!}
                     setMessages={setMessages}
                     user={user}
+                    channelName={channel?.name ?? ''}
                 />
             </div>
         </main>

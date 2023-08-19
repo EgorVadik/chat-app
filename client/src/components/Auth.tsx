@@ -48,8 +48,11 @@ export default function Auth({ isLogin = false }: Props) {
                     title: res.data.message,
                 })
 
-                navigate('/')
                 window.location.reload()
+
+                navigate('/', {
+                    replace: true,
+                })
             } catch (error) {
                 if (error instanceof AxiosError) {
                     switch (error.response?.data.message) {
@@ -85,6 +88,7 @@ export default function Auth({ isLogin = false }: Props) {
             } finally {
                 setLoading(false)
             }
+            return
         }
 
         try {

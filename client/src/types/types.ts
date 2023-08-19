@@ -21,6 +21,8 @@ export interface Channel {
     members?: ChannelMember[]
 }
 
+export type SearchChannel = Omit<Channel, 'messages' | 'members'>
+
 export interface ChannelMember {
     id: string
     name: string
@@ -39,4 +41,12 @@ export interface Message {
         name: string
         photo: string | null
     }
+}
+
+export interface Notification {
+    channelId: string
+    content: string
+    createdAt: Date
+    channelName: string
+    username: string
 }

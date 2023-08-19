@@ -2,9 +2,10 @@ import { BiSolidChevronDown } from 'react-icons/bi'
 import SideChannels from './SideChannels'
 import SideMembers from './SideMembers'
 import { useAtom } from 'jotai'
-import { openAtom } from '../state/atoms'
+import { channelsAtom, openAtom } from '../state/atoms'
 import ProfileDropdownMenu from './ProfileDropdownMenu'
 import { ChannelMember, User } from '@/types/types'
+import { MemoizedNotificationChannel } from './NotificationChannel'
 
 type Props = {
     user: User | null
@@ -12,6 +13,7 @@ type Props = {
     members?: ChannelMember[]
     channelName?: string
     channelDescription?: string
+    loading?: boolean
 }
 
 export default function Sidebar({
@@ -20,11 +22,23 @@ export default function Sidebar({
     channelDescription,
     channelName,
     members,
+    loading,
 }: Props) {
     const [open] = useAtom(openAtom)
+    const [channelsData] = useAtom(channelsAtom)
+
+    if (channelsData == null) return null
 
     return (
         <>
+            {channelsData.map((channel) => {
+                return (
+                    <MemoizedNotificationChannel
+                        key={channel.id}
+                        channelId={channel.id}
+                    />
+                )
+            })}
             <div
                 data-open={open}
                 className='max-h-screen min-h-screen flex flex-col justify-between lg:max-w-xs lg:min-w-[320px] lg:w-full max-w-sm w-[85%] bg-sidebar text-light-gray transition-all duration-300 lg:opacity-100 lg:translate-x-0 opacity-0 -translate-x-full data-[open=true]:opacity-100 data-[open=true]:translate-x-0 shrink-0 data-[open=false]:shrink z-20'
@@ -37,6 +51,7 @@ export default function Sidebar({
                             members={members}
                             channelName={channelName}
                             channelDescription={channelDescription}
+                            loading={loading}
                         />
                     )}
                 </div>

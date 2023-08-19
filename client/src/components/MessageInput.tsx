@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios'
 import { useForm } from 'react-hook-form'
 import { IoMdSend } from 'react-icons/io'
 import { useToast } from '@/components/ui/use-toast'
-import { Dispatch, SetStateAction, useEffect } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import io, { Socket } from 'socket.io-client'
 
 type Props = {
@@ -13,6 +13,7 @@ type Props = {
     loading: boolean
     setMessages: Dispatch<SetStateAction<MessageType[]>>
     user: User | null
+    channelName: string
 }
 
 let socket: Socket
@@ -22,11 +23,13 @@ export default function MessageInput({
     loading,
     setMessages,
     user,
+    channelName,
 }: Props) {
     const { register, handleSubmit, reset } = useForm<Message>({
         resolver: zodResolver(MessageSchema),
     })
     const { toast } = useToast()
+    const [usersTyping, setUsersTyping] = useState<string[]>([])
 
     useEffect(() => {
         socket = io(import.meta.env.VITE_SERVER_URL as string, {
@@ -37,13 +40,12 @@ export default function MessageInput({
             socket.disconnect()
             socket.close()
         }
-    }, [])
+    }, [channelId])
 
     useEffect(() => {
         if (!socket) return
 
         socket.on('connect', () => {
-            console.log('connected')
             socket.emit('join-channel', channelId)
         })
 
@@ -57,14 +59,25 @@ export default function MessageInput({
             )
         })
 
+        socket.on('receive-user-stop-typing', (username: string) => {
+            setUsersTyping((prev) => prev.filter((user) => user !== username))
+        })
+
+        socket.on('receive-user-typing', (username: string) => {
+            setUsersTyping((prev) => [...prev, username])
+        })
+
         return () => {
             socket.disconnect()
             socket.close()
+            socket.off('receive-message')
+            socket.off('delete-message')
+            socket.off('receive-user-typing')
         }
     }, [channelId, setMessages])
 
     const onSubmit = async (data: Message) => {
-        if (!socket) {
+        if (!socket || !socket.connected) {
             toast({
                 title: 'Error',
                 description: 'Unable to connect to server',
@@ -93,6 +106,8 @@ export default function MessageInput({
             setMessages((prev) => [...prev, placeholderMessage])
 
             socket.emit('send-message', placeholderMessage, channelId)
+            socket.emit('user-stop-typing', { channelId, username: user?.name })
+            setUsersTyping((prev) => prev.filter((u) => u !== user?.name))
 
             const res = await axios.post(
                 `${import.meta.env.VITE_SERVER_URL}/api/message`,
@@ -112,6 +127,14 @@ export default function MessageInput({
                         : message
                 )
             )
+
+            socket.emit('send-notification', {
+                channelId,
+                channelName,
+                content: data.content,
+                createdAt: res.data.createdAt,
+                username: res.data.user.name,
+            })
         } catch (error) {
             socket.emit('delete-message', randomUUID, channelId)
             setMessages((prev) =>
@@ -147,25 +170,55 @@ export default function MessageInput({
     }
 
     return (
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className='relative flex items-center justify-center py-6 lg:px-10 px-5'
-        >
-            <input
-                {...register('content')}
-                type='text'
-                className={`w-full py-3 bg-search-bar rounded-lg px-4 text-light-gray outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200`}
-                placeholder='Type a message here'
-                disabled={loading}
-                autoComplete='off'
-            />
-            <button
-                type='submit'
-                className='absolute lg:right-12 right-7 bg-blue-btn p-2 rounded-lg duration-200 hover:opacity-80'
-                disabled={loading}
+        <div className='relative'>
+            {usersTyping.length > 0 && (
+                <div className='absolute lg:left-10 left-5 animate-pulse'>
+                    <p className='text-medium-gray text-sm'>
+                        {usersTyping.join(', ')}{' '}
+                        {usersTyping.length === 1 ? 'is' : 'are'} typing...
+                    </p>
+                </div>
+            )}
+            <form
+                onSubmit={handleSubmit(onSubmit)}
+                className='relative flex items-center justify-center py-6 lg:px-10 px-5'
             >
-                <IoMdSend className='text-white text-xl' />
-            </button>
-        </form>
+                <input
+                    {...register('content', {
+                        onChange(e) {
+                            if (e.target.value.trim().length === 0) {
+                                socket.emit('user-stop-typing', {
+                                    channelId,
+                                    username: user?.name,
+                                })
+                                setUsersTyping((prev) =>
+                                    prev.filter((u) => u !== user?.name)
+                                )
+                                return
+                            }
+                            if (usersTyping.includes(user!.name)) return
+                            setUsersTyping((prev) => [...prev, user!.name])
+
+                            socket.emit('send-user-typing', {
+                                channelId,
+                                username: user?.name,
+                            })
+                        },
+                    })}
+                    type='text'
+                    className={`w-full py-3 bg-search-bar rounded-lg px-4 text-light-gray outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200`}
+                    placeholder='Type a message here'
+                    disabled={loading}
+                    autoComplete='off'
+                />
+                <button
+                    type='submit'
+                    className='absolute lg:right-12 right-7 bg-blue-btn p-2 rounded-lg duration-200 hover:opacity-80'
+                    disabled={loading}
+                >
+                    <IoMdSend className='text-white text-xl' />
+                </button>
+            </form>
+        </div>
     )
 }

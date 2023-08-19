@@ -17,7 +17,18 @@ export default () => {
     io.use(wrap(passport.initialize()))
     io.use(wrap(passport.session()))
 
+    io.of('/channels').use(wrap(sessionConfig))
+    io.of('/channels').use(wrap(passport.initialize()))
+    io.of('/channels').use(wrap(passport.session()))
+
     io.use((socket, next) => {
+        if (socket.request.user) {
+            next()
+        } else {
+            next(new Error('unauthorized'))
+        }
+    })
+    io.of('/channels').use((socket, next) => {
         if (socket.request.user) {
             next()
         } else {
@@ -26,16 +37,8 @@ export default () => {
     })
 
     io.on('connection', (socket) => {
-        console.log('a user connected ', socket.rooms)
-
         socket.on('join-channel', (channelId) => {
             socket.join(channelId)
-            console.log('joined channel', channelId)
-        })
-
-        socket.on('leave-channel', (channelId) => {
-            socket.leave(channelId)
-            console.log('left channel', channelId)
         })
 
         socket.on('send-message', (message, channelId) => {
@@ -46,8 +49,38 @@ export default () => {
             socket.to(channelId).emit('delete-message', messageId)
         })
 
+        socket.on('send-notification', (data) => {
+            io.of('/channels')
+                .to(data.channelId)
+                .emit('receive-notification', data)
+        })
+
+        socket.on('send-user-typing', (data) => {
+            socket.to(data.channelId).emit('receive-user-typing', data.username)
+        })
+
+        socket.on('user-stop-typing', (data) => {
+            socket
+                .to(data.channelId)
+                .emit('receive-user-stop-typing', data.username)
+        })
+
         socket.on('disconnect', () => {
-            console.log('user disconnected')
+            socket.rooms.forEach((room) => {
+                socket.leave(room)
+            })
+        })
+    })
+
+    io.of('/channels').on('connection', (socket) => {
+        socket.on('join-channel-notification', (channelId) => {
+            socket.join(channelId)
+        })
+
+        socket.on('disconnect', () => {
+            socket.rooms.forEach((room) => {
+                socket.leave(room)
+            })
         })
     })
 }

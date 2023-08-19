@@ -29,6 +29,67 @@ router.post('/', loginRequired, async (req, res) => {
     res.status(201).json(newChannel)
 })
 
+router.post('/join', loginRequired, async (req, res) => {
+    const { channelId } = req.body
+
+    if (!channelId) {
+        return res.status(404).send('Channel Not Found')
+    }
+
+    const isMember = await prisma.channel.findFirst({
+        where: {
+            id: channelId,
+            userIds: {
+                has: req.user!.id,
+            },
+        },
+    })
+
+    if (isMember) {
+        res.status(400).send('Already a member')
+        return
+    }
+
+    await prisma.channel.update({
+        where: {
+            id: channelId,
+        },
+        data: {
+            userIds: {
+                push: req.user!.id,
+            },
+        },
+    })
+
+    res.status(200).json({
+        id: req.user!.id,
+        name: req.user!.name,
+        photo: req.user!.photo,
+    })
+})
+
+router.get('/search', loginRequired, async (req, res) => {
+    const { search } = req.query
+
+    const channels = await prisma.channel.findMany({
+        where: {
+            name: {
+                contains: search as string,
+                mode: 'insensitive',
+            },
+        },
+        select: {
+            id: true,
+            name: true,
+            userIds: true,
+            createdAt: true,
+            description: true,
+        },
+    })
+
+    res.send(channels).status(200)
+})
+
 router.get('/:id', loginRequired, async (req, res) => {
     const channel = await prisma.channel.findUnique({
         where: {
