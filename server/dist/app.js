@@ -36,7 +36,7 @@ app.use(exports.sessionConfig);
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 app.use((0, cors_1.default)({
-    origin: 'https://chat-app-egorvadik.vercel.app/',
+    origin: 'https://chat-app-egorvadik.vercel.app',
     credentials: true,
 }));
 (0, io_1.default)();
