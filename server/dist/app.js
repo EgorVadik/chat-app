@@ -23,7 +23,8 @@ exports.sessionConfig = (0, express_session_1.default)({
     resave: true,
     saveUninitialized: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production' ? true : false,
+        // secure: process.env.NODE_ENV === 'production' ? true : false,
+        secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7 * 52,
     },
     store: connect_mongo_1.default.create({

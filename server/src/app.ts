@@ -18,7 +18,8 @@ export const sessionConfig = session({
     resave: true,
     saveUninitialized: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production' ? true : false,
+        // secure: process.env.NODE_ENV === 'production' ? true : false,
+        secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7 * 52,
     },
     store: MongoStore.create({
