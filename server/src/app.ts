@@ -17,13 +17,13 @@ export const sessionConfig = session({
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
-    // cookie: {
-    //     secure: process.env.NODE_ENV === 'production',
-    //     // secure: true,
-    //     maxAge: 1000 * 60 * 60 * 24 * 7 * 52,
-    //     sameSite: false,
-    //     httpOnly: true,
-    // },
+    cookie: {
+        // secure: process.env.NODE_ENV === 'production',
+        secure: true,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        sameSite: false,
+        httpOnly: false,
+    },
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE_URL!,
     }),
