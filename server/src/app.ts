@@ -18,8 +18,8 @@ export const sessionConfig = session({
     resave: true,
     saveUninitialized: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production' ? true : false,
-        // secure: false,
+        // secure: process.env.NODE_ENV === 'production' ? true : false,
+        secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7 * 52,
     },
     store: MongoStore.create({
@@ -34,7 +34,10 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(
     cors({
-        origin: 'https://chat-app-egorvadik.vercel.app',
+        origin: [
+            'https://chat-app-egorvadik.vercel.app',
+            'http://localhost:5173',
+        ],
         credentials: true,
     })
 )
