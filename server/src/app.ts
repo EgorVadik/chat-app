@@ -11,17 +11,23 @@ import initIo from './socket/io'
 export const prisma = new PrismaClient()
 const app = express()
 export const server = http.createServer(app)
-const port = 3000
+const port = process.env.PORT ?? 3000
+
+console.log(process.env.NODE_ENV)
 
 export const sessionConfig = session({
     secret: process.env.SESSION_SECRET!,
     resave: true,
     saveUninitialized: true,
     cookie: {
-        // secure: process.env.NODE_ENV === 'production' ? true : false,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        // secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7 * 52,
         sameSite: 'none',
+        domain:
+            process.env.NODE_ENV === 'production'
+                ? 'chat-app-egorvadik.vercel.app'
+                : 'localhost',
     },
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE_URL!,
@@ -54,6 +60,4 @@ app.use('/api/channel', channelRouter)
 import { router as messageRouter } from './routes/message'
 app.use('/api/message', messageRouter)
 
-server.listen(process.env.PORT ?? port, () =>
-    console.log(`Listening on port ${port}!`)
-)
+server.listen(port, () => console.log(`Listening on port ${port}!`))
