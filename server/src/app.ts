@@ -13,21 +13,16 @@ const app = express()
 export const server = http.createServer(app)
 const port = process.env.PORT ?? 3000
 
-console.log(process.env.NODE_ENV)
-
 export const sessionConfig = session({
     secret: process.env.SESSION_SECRET!,
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production' ? true : false,
+        secure: process.env.NODE_ENV === 'production',
         // secure: true,
         maxAge: 1000 * 60 * 60 * 24 * 7 * 52,
-        sameSite: 'none',
-        domain:
-            process.env.NODE_ENV === 'production'
-                ? 'chat-app-egorvadik.vercel.app'
-                : 'localhost',
+        sameSite: false,
+        httpOnly: true,
     },
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE_URL!,
