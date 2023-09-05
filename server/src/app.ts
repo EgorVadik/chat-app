@@ -21,8 +21,8 @@ export const sessionConfig = session({
         // secure: process.env.NODE_ENV === 'production',
         secure: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        sameSite: false,
-        httpOnly: false,
+        // sameSite: false,
+        // httpOnly: false,
     },
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE_URL!,
