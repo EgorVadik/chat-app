@@ -22,7 +22,7 @@ export const sessionConfig = session({
         secure: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
         sameSite: 'none',
-        // httpOnly: false,
+        httpOnly: true,
     },
     store: MongoStore.create({
         mongoUrl: process.env.DATABASE_URL!,
