@@ -48,6 +48,8 @@ export default function Auth({ isLogin = false }: Props) {
                     title: res.data.message,
                 })
 
+                console.log(document.cookie)
+
                 window.location.reload()
 
                 navigate('/', {
